@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <title>Instant Chat</title>
+        <link rel = "stylesheet"  href = "css/bootstrap.min.css" type = "text/css"/>
+        <link rel="stylesheet" href="css/basic.css"/>
+
+        <script src="/jquery/dist/jquery.js"></script>
+        <script src="/socket.io/socket.io.js"></script>
+
+    </head>
+    <body>
+        <!--<h2>Instant Chat</h2>-->
+
+
+        <div id="content-wrap">
+            <div id = "chat-wrap">
+                <div id="chat"></div>
+
+                <form id="messageForm">
+                    <input id="message" type="text"></input>
+                    <input type="submit" value="Send"></input>
+                </form>
+            </div>
+
+            <div id="users"></div>
+        </div>
+
+        <div id="nick-wrap">
+            <p>Enter a username</p>
+            <p id="nickError"></p>
+            <form id="setName">
+                <input id="nickname" type="text"></input>
+                <input type="submit" value="Send"></input>
+            </form>
+        </div>
+    </body>
+</html>
+
+<script>
+ var socket = io.connect('http://localhost:4200');
+ var $messageForm = $('#messageForm');
+ var $messageBox = $('#message');
+ var $chat = $('#chat');
+ var $usersForm = $('#setName');
+ var $nickError = $('#nickError');
+ var $usersBox = $('#nickname');
+ var $users = $('#users');
+
+ $usersForm.submit(function (e) {
+     e.preventDefault();
+     socket.emit('new user', $usersBox.val(), function(data){
+
+         if (data){
+             $('#nick-wrap').hide();
+             $('#content-wrap').show();
+         }else{
+             $nickError.html('user already exists!');
+         }
+
+
+
+     });
+     //clear up the user box
+     $usersBox.val('');
+ });
+
+ socket.on('usersnames', function(data){
+     var names = '';
+     for (var i = 0; i < data.length; i++){
+         names += data[i] + '<br>';
+     }
+     $users.html(names);
+ });
+
+ $messageForm.submit(function(e){
+     e.preventDefault();
+     socket.emit('send messages', $messageBox.val(), function(data){
+         //needs further implementation
+         $chat.append('<span class="error"><b>' + data + "</span><br/>");
+     });
+     //clear up the message box
+     $messageBox.val('');
+ });
+////////////
+
+ socket.on('load history', function (docs) {
+     for(var i = 0; i < docs.length; i++){
+         displayMsg(docs[i]);
+     }
+
+ });
+/////////////
+ socket.on('broad', function(data) {
+    displayMsg(data);
+ });
+
+ function displayMsg(data) {
+     $chat.append('<span class="msg"><b>' + data.nick + ': </b>' + data.msg + "</span><br/>");
+ }
+
+ socket.on('privateMsg', function (data) {
+     $chat.append('<span class="pMsg"><b>' + data.nick + ': </b>' + data.msg + "</span><br/>");
+ });
+
+
+</script>

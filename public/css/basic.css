@@ -1,0 +1,20 @@
+#chat{
+    height: 500px;
+}
+
+#content-wrap{
+    display: none;
+}
+
+#chat-wrap{
+    float: left;
+    border: 5px #000 solid;
+}
+
+.pMsg{
+    color: darkgray;
+
+}
+.error{
+    color: darkred;
+}
